@@ -72,15 +72,34 @@ class MKV {
     }
     
     class Track {
+        // 目前主要是为了标记 mkvinfo 中获取的字幕文件类型
+        // 以便于使用 mkvextract 时输入相应的扩展名
+        enum ContentType: String {
+            case `default`
+            case srt = "utf8"
+            case ssa
+            case ass
+            
+            var humanReadable: String {
+                switch self {
+                case .`default`: return "default"
+                case .srt: return "srt"
+                case .ssa: return "ssa"
+                case .ass: return "ass"}
+            }
+        }
+        
         let id: String
         let type: TrackType
         let language: Language
+        let contentType: ContentType
         
-        init(id: String, type: String, language: String) {
+        init(id: String, type: String, language: String, contentType: String) {
             self.id = id
             
             self.type = TrackType.init(rawValue: type)
             self.language = Language.init(rawValue: language)
+            self.contentType = ContentType.init(rawValue: contentType.lowercased())
         }
     }
 }
@@ -94,4 +113,9 @@ extension MKV.TrackType: UnknownCaseRepresentable {
 extension MKV.Language: Codable {}
 extension MKV.Language: UnknownCaseRepresentable {
     static let unknownCase: MKV.Language = .undefined
+}
+
+extension MKV.Track.ContentType: Codable {}
+extension MKV.Track.ContentType: UnknownCaseRepresentable {
+    static let unknownCase: MKV.Track.ContentType = .default
 }

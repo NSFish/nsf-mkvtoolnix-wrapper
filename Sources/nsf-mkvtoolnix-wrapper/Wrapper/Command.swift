@@ -25,7 +25,7 @@ struct NSFMKVToolNixWrapper: ParsableCommand {
         // Pass an array to `subcommands` to set up a nested tree of subcommands.
         // With language support for type-level introspection, this could be
         // provided by automatically finding nested `ParsableCommand` types.
-        subcommands: [Remove.self])
+        subcommands: [Extract.self, Remove.self])
     
     struct Options: ParsableArguments {
         @Option(help: "jpn, eng, rus, etc.")
@@ -40,6 +40,23 @@ struct NSFMKVToolNixWrapper: ParsableCommand {
 }
 
 extension NSFMKVToolNixWrapper {
+    
+    struct Extract: ParsableCommand {
+        @Argument(help: "")
+        var target: MKV.Target = .unsupported
+        
+        @OptionGroup()
+        var parentOptions: Options
+        
+        mutating func run() throws {
+            try Dispatcher.deal(directoryURL: parentOptions.directoryURL,
+                                operation: MKVTask.Operation.extract,
+                                target: target,
+                                language: parentOptions.language,
+                                id: nil,
+                                name: nil)
+        }
+    }
     
     struct Remove: ParsableCommand {
         @Argument(help: "")

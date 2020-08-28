@@ -57,6 +57,7 @@ final class MKVTask {
     
     enum Operation {
         case query
+        case extract
         case modify
         case remove
     }

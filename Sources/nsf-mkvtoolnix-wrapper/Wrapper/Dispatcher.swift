@@ -30,15 +30,20 @@ class Dispatcher {
             
         }
         else {
+            let trackType = MKV.TrackType.init(rawValue: target.rawValue)
+
             switch operation {
             case .query:
                 print("")
+                
                 //            if option == .onlyUndefined {
                 //                try showFilesThatOnlyContainsLanguageUndefinedTracks(among: files, type: type)
                 //            }
                 //            else {
                 //                try showTracks(among: files, type: type)
             //            }
+            case .extract:
+                try extractAllTracks(among: files, type: trackType)
             case .modify:
                 print("")
                 //            guard let language = language else {
@@ -52,12 +57,21 @@ class Dispatcher {
                 //                try setLanguageForUndefinedTracks(among: files, type: type, language: language)
             //            }
             case .remove:
-                let trackType = MKV.TrackType.init(rawValue: target.rawValue)
                 try removeAllTracks(among: files, type: trackType)
             }
         }
         
         setCurrentDirectoryURL(nil)
+    }
+}
+
+// Track - Extract
+private extension Dispatcher {
+    
+    class func extractAllTracks(among files: [URL], type: MKV.TrackType) throws {
+        try files.forEach { url in
+            try MKVExtract.shared.extractAllTracksFromFile(at: url, type: type)
+        }
     }
 }
 
@@ -77,6 +91,7 @@ private extension Dispatcher {
     class func setCurrentDirectoryURL(_ url: URL?) {
         MKVInfo.shared.currentDirectoryURL = url
         MKVMerge.shared.currentDirectoryURL = url
+        MKVExtract.shared.currentDirectoryURL = url
     }
     
     class func detectMKVFilesIn(directory: URL) throws -> [URL] {
