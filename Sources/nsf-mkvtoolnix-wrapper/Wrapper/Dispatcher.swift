@@ -29,35 +29,33 @@ class Dispatcher {
         if target == .title {
             
         }
-        else {
+        else if target.isTrack() {
             let trackType = MKV.TrackType.init(rawValue: target.rawValue)
-
+            
             switch operation {
             case .query:
                 print("")
-                
-                //            if option == .onlyUndefined {
-                //                try showFilesThatOnlyContainsLanguageUndefinedTracks(among: files, type: type)
-                //            }
-                //            else {
-                //                try showTracks(among: files, type: type)
-            //            }
             case .extract:
                 try extractAllTracks(among: files, type: trackType)
             case .modify:
                 print("")
-                //            guard let language = language else {
-                //                throw NSFMKVError.dummy
-                //            }
-                //
-                //            if let name = name {
-                //                try modifyTrackName(among: files, type: type, language: language, name: name)
-                //            }
-                //            else {
-                //                try setLanguageForUndefinedTracks(among: files, type: type, language: language)
-            //            }
             case .remove:
                 try removeAllTracks(among: files, type: trackType)
+            }
+        }
+        else {
+            switch operation {
+            case .query:
+                print("")
+            case .extract:
+                print("")
+            case .modify:
+                print("")
+            case .remove:
+                print("")
+                if target == .attachments {
+                    try removeAllAttachments(among: files)
+                }
             }
         }
         
@@ -78,6 +76,12 @@ private extension Dispatcher {
 // Track - Remove
 private extension Dispatcher {
     
+    class func removeAllAttachments(among files: [URL]) throws {
+        try files.forEach { url in
+            try MKVMerge.shared.removeAllAttachmentsFromFile(at: url)
+        }
+    }
+    
     class func removeAllTracks(among files: [URL], type: MKV.TrackType) throws {
         try files.forEach { url in
             try MKVMerge.shared.removeAllTracksFromFile(at: url, type: type)
@@ -96,8 +100,9 @@ private extension Dispatcher {
     
     class func detectMKVFilesIn(directory: URL) throws -> [URL] {
         let items = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: .none, options: .skipsHiddenFiles)
-        let mkvFiles = items.filter { url -> Bool in
-            return url.pathExtension.lowercased() == "mkv"
+        let mkvFiles = items.filter({ $0.pathExtension.lowercased() == "mkv" })
+            .sorted { (url1, url2) -> Bool in
+                return url1.lastPathComponent < url2.lastPathComponent
         }
         
         return mkvFiles

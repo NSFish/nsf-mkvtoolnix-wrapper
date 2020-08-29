@@ -16,7 +16,7 @@ class MKV {
     //    - audio
     //    - subtitles
     // chapters
-    // fonts
+    // attachments
     // tags
     enum Target: String, CaseIterable {
         case title
@@ -25,7 +25,7 @@ class MKV {
         case subtitles
         case chapter
         case tag
-        case font
+        case attachments
         case unsupported
         
         var humanReadable: String {
@@ -36,8 +36,14 @@ class MKV {
             case .subtitles: return "字幕"
             case .chapter: return "章节"
             case .tag: return "标签"
-            case .font: return "字体"
+            case .attachments: return "附件"
             case .unsupported: return "尚不支持的 target"}
+        }
+        
+        func isTrack() -> Bool {
+            return self == .video
+            || self == .audio
+            || self == .subtitles
         }
     }
     
@@ -93,13 +99,27 @@ class MKV {
         let type: TrackType
         let language: Language
         let contentType: ContentType
+        let name: String
         
-        init(id: String, type: String, language: String, contentType: String) {
+        init(id: String, type: String, language: String, contentType: String, name: String) {
             self.id = id
-            
             self.type = TrackType.init(rawValue: type)
             self.language = Language.init(rawValue: language)
             self.contentType = ContentType.init(rawValue: contentType.lowercased())
+            self.name = name
+        }
+    }
+    
+    class Attachment {
+        
+        let id: String
+        let fileName: String
+        let MIMEType: String
+        
+        init(id: String, fileName: String, MIMEType: String) {
+            self.id = id
+            self.fileName = fileName
+            self.MIMEType = MIMEType
         }
     }
 }

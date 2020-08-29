@@ -18,6 +18,19 @@ class MKVMerge: MKVTaskProtocol {
 
 extension MKVMerge {
     
+    func removeAllAttachmentsFromFile(at url: URL) throws {
+        let attachments = try attachmentsInFile(at: url)
+        if attachments.count == 0 {
+            Hint.pass.humanReadable(url: url)
+        }
+        else {
+            let flag = "--no-attachments"
+
+            Hint.startProcessing.humanReadable(url: url)
+            try executeTask(with: url, arguments: [flag], showOutput: true)
+        }
+    }
+
     func removeAllTracksFromFile(at url: URL, type: MKV.TrackType) throws {
         let unknownFlag = ""
         let flag: String = {
@@ -46,6 +59,29 @@ extension MKVMerge {
 
 // Private
 private extension MKVMerge {
+    
+    func attachmentsInFile(at url: URL) throws -> [MKV.Attachment] {
+        let fileName = url.lastPathComponent
+        let output = startTask(with: executableURL, arguments: ["-i", fileName])
+
+        var attachments = [MKV.Attachment]()
+        output.forEach { line in
+            if line.contains("Attachment ID") {
+                let attachmentID = line.components(separatedBy: "Attachment ID ")
+                    .last!.components(separatedBy: ": type").first!
+                let MIMEType = line.components(separatedBy: "type '").last!.components(separatedBy: "', size").first!
+                let fileName = line.components(separatedBy: "file name '").last!
+                    .replacingOccurrences(of: "'", with: "")
+                
+                let attachment = MKV.Attachment.init(id: attachmentID,
+                                                     fileName: fileName,
+                                                     MIMEType: MIMEType)
+                attachments.append(attachment)
+            }
+        }
+        
+        return attachments
+    }
     
     func executeTask(with fileURL: URL,
                      arguments: [String],

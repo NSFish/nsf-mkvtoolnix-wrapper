@@ -48,6 +48,7 @@ private extension MKVInfo {
             var trackType = ""
             var trackLanguage = ""
             var trackContentType = MKV.Track.ContentType.default.rawValue
+            var trackName = ""
 
             trackInfo.forEach { line in
                 if line.contains("|  + Track number:") {
@@ -65,12 +66,19 @@ private extension MKVInfo {
                         trackContentType = array.last!
                     }
                 }
+                else if line.contains("|  + Name:") {
+                    let array = line.components(separatedBy: "Name:")
+                    if array.count > 1 {
+                        trackName = array.last!
+                    }
+                }
             }
             
             let track = MKV.Track.init(id: trackID,
                                        type: trackType,
                                        language: trackLanguage,
-                                       contentType: trackContentType)
+                                       contentType: trackContentType,
+                                       name: trackName)
             tracks.append(track)
         }
         

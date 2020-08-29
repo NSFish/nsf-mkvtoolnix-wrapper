@@ -24,15 +24,17 @@ class MKVExtract: MKVTaskProtocol {
             Hint.startProcessing.humanReadable(url: url)
             
             tracks.forEach { track in
-                // Todo: 如何根据 mkvinfo 提供的信息在这里标识输出文件的扩展名是个难点
-                // 这里暂时只处理字幕文件
-                let fileName = url.deletingPathExtension()
-                    .appendingPathExtension(track.contentType.humanReadable)
-                    .lastPathComponent
-                // mkvextract tracks <your_mkv_video> <track_numer>:<subtitle_file.srt>
-                startTask(with: executableURL,
-                          arguments: ["tracks", url.path, track.id + ":" + fileName],
-                          showOutput: true)
+                if track.name.contains("简体中文") {
+                    // Todo: 如何根据 mkvinfo 提供的信息在这里标识输出文件的扩展名是个难点
+                    // 这里暂时只处理字幕文件
+                    let fileName = url.deletingPathExtension().lastPathComponent
+                        + "_track_" + track.id + "_"
+                        + track.name + "." + track.contentType.humanReadable
+                    // mkvextract tracks <your_mkv_video> <track_numer>:<subtitle_file.srt>
+                    startTask(with: executableURL,
+                              arguments: ["tracks", url.path, track.id + ":" + fileName],
+                              showOutput: true)
+                }
             }
         }
     }
